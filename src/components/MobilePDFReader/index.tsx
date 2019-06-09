@@ -14,28 +14,28 @@ let TEXT_LAYER_MODE = 0; // DISABLE
 let MAX_IMAGE_SIZE = 1024 * 1024;
 let CMAP_PACKED = true;
 let DEFAULT_URL = "/test.pdf";
-let DEFAULT_SCALE_DELTA  = 1.1;
+let DEFAULT_SCALE_DELTA = 1.1;
 let MIN_SCALE = DEFAULT_MIN_SCALE;
 let MAX_SCALE = DEFAULT_MAX_SCALE;
-let DEFAULT_SCALE_VALUE: string|number = "auto"; // in order to be responsive
+let DEFAULT_SCALE_VALUE: string | number = "auto"; // in order to be responsive
 interface IProps {
-  url: string|object;
-  page?: number|string;
-  scale?: number|string;
+  url: string | object;
+  page?: number | string;
+  scale?: number | string;
   onDocumentComplete?: any;
   minScale?: number;
   maxScale?: number;
-  isShowHeader?:boolean;
-  isShowFooter?:boolean;
+  isShowHeader?: boolean;
+  isShowFooter?: boolean;
 }
 interface IStates {
   currentPageNumber: any;
   currentScaleValue: any;
-  totalPage: number|string;
+  totalPage: number | string;
   title: string;
 }
 @CSSModules(styles)
-export class MobilePDFReader extends React.Component<IProps,IStates> {
+export class MobilePDFReader extends React.Component<IProps, IStates> {
   state: IStates = {
     currentPageNumber: 1,
     currentScaleValue: "auto",
@@ -52,35 +52,36 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
   error: any;
   documentInfo: any;
   metadata: any;
-  public constructor (props: IProps) {
+  public constructor(props: IProps) {
     super(props);
     this.pdfLoadingTask = null;
     this.pdfDocument = null;
     this.pdfViewer = {
       currentScaleValue: null
     },
-    this.pdfHistory = null;
+      this.pdfHistory = null;
     this.pdfLinkService = null;
     this.container = React.createRef();
   }
-  get pagesCount () {
+  get pagesCount() {
     return this.pdfDocument.numPages;
   }
-  get page () {
+  get page() {
     if (this.pdfViewer != null) {
       return this.pdfViewer.currentPageNumber;
     } else {
       return 1;
     }
   }
-  get loadingBar () {
+  get loadingBar() {
     let bar = new pdfjsViewer.ProgressBar("#loadingBar", {});
     return pdfjsLib.shadow(this, "loadingBar", bar);
   }
-  private open (params) {
+  private open(params) {
     let url = params.url
     let self = this
     this.setTitleUsingUrl(url)
+    const { onDocumentComplete } = this.props;
     // Loading document.
     let loadingTask = pdfjsLib.getDocument({
       url: url,
@@ -97,6 +98,9 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
     return loadingTask.promise.then(function (pdfDocument) {
       // Document loaded, specifying document for the viewer.
       self.pdfDocument = pdfDocument;
+      if (onDocumentComplete) {
+        this.props.onDocumentComplete(pdfDocument.numPages);
+      }
       self.pdfViewer.setDocument(pdfDocument)
       self.pdfLinkService.setDocument(pdfDocument)
       self.pdfHistory.initialize(pdfDocument.fingerprint)
@@ -129,7 +133,7 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
       self.loadingBar.hide()
     })
   }
-  private setTitleUsingUrl (url) {
+  private setTitleUsingUrl(url) {
     let title = pdfjsLib.getFilenameFromUrl(url) || url;
     try {
       title = decodeURIComponent(title);
@@ -139,18 +143,18 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
     }
     this.setTitle(title);
   }
-  private setTitleUsingMetadata (pdfDocument) {
-    let self = this ;
+  private setTitleUsingMetadata(pdfDocument) {
+    let self = this;
     return pdfDocument.getMetadata().then(function (data) {
       let info = data.info; let metadata = data.metadata;
-      self.documentInfo = info ;
+      self.documentInfo = info;
       self.metadata = metadata;
 
       // Provides some basic debug information
       console.log("PDF " + pdfDocument.fingerprint + " [" +
-                  info.PDFFormatVersion + " " + (info.Producer || "-").trim() +
-                  " / " + (info.Creator || "-").trim() + "]" +
-                  " (PDF.js: " + (pdfjsLib.version || "-") + ")");
+        info.PDFFormatVersion + " " + (info.Producer || "-").trim() +
+        " / " + (info.Creator || "-").trim() + "]" +
+        " (PDF.js: " + (pdfjsLib.version || "-") + ")");
 
       let pdfTitle;
       if (metadata && metadata.has("dc:title")) {
@@ -169,20 +173,20 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
       if (pdfTitle) {
         self.setTitle(pdfTitle + " - " + document.title);
       }
-      return {title: pdfTitle, documentInfo: info};
+      return { title: pdfTitle, documentInfo: info };
     });
   }
-  private setTitle (title) {
-    this.setState({title});
+  private setTitle(title) {
+    this.setState({ title });
   }
-  private progress (level) {
+  private progress(level) {
     let percent = Math.round(level * 100);
     // Updating the bar if value increases.
     if (percent > this.loadingBar.percent || isNaN(percent)) {
       this.loadingBar.percent = percent;
     }
   }
-  private initUI () {
+  private initUI() {
     let linkService = new pdfjsViewer.PDFLinkService();
     const self = this;
     const { scale, page, onDocumentComplete } = self.props;
@@ -215,7 +219,7 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
         pdfViewer.currentPageNumber = page;
       }
       pdfViewer.currentScaleValue = DEFAULT_SCALE_VALUE;
-      self.setState({totalPage: self.pdfDocument.numPages});
+      self.setState({ totalPage: self.pdfDocument.numPages });
     });
     container.addEventListener("pagechange", function (evt) {
       let page = evt.pageNumber;
@@ -252,72 +256,72 @@ export class MobilePDFReader extends React.Component<IProps,IStates> {
     }
     this.pdfViewer.currentPageNumber--;
   }
-  public componentDidMount () {
-    const { url, minScale, maxScale} = this.props ;
+  public componentDidMount() {
+    const { url, minScale, maxScale } = this.props;
     // deal with the props if include minScale or maxScale
     if (minScale) {
-      MIN_SCALE = minScale ;
+      MIN_SCALE = minScale;
     }
     if (maxScale) {
-      MAX_SCALE = maxScale ;
+      MAX_SCALE = maxScale;
     }
     this.initUI();
     this.open({
       url
     });
   }
-  public render(){
+  public render() {
     const { title } = this.state;
-    const { isShowHeader,isShowFooter } = this.props;
+    const { isShowHeader, isShowFooter } = this.props;
     let showHeader = true;
     let showFooter = true;
-    if(isShowHeader!==undefined){
+    if (isShowHeader !== undefined) {
       showHeader = isShowHeader;
     }
-    if(isShowFooter!==undefined){
+    if (isShowFooter !== undefined) {
       showFooter = isShowFooter;
     }
     return <div className='mobile__pdf__container'>
-              {
-                showHeader&&<header className="mobile__pdf__container__header">
-                   {title}
-                </header>
-              }  
-              <div id="viewerContainer" ref={this.container}>
-                <div id="viewer" className="pdfViewer" ></div>
-              </div>
-              <div id="loadingBar">
-                <div className="progress"></div>
-                <div className="glimmer"></div>
-              </div>
-              <div id="errorWrapper" hidden={true}>
-                <div id="errorMessageLeft">
-                  <span id="errorMessage"></span>
-                  <button id="errorShowMore">
-                     More Information
+      {
+        showHeader && <header className="mobile__pdf__container__header">
+          {title}
+        </header>
+      }
+      <div id="viewerContainer" ref={this.container}>
+        <div id="viewer" className="pdfViewer" ></div>
+      </div>
+      <div id="loadingBar">
+        <div className="progress"></div>
+        <div className="glimmer"></div>
+      </div>
+      <div id="errorWrapper" hidden={true}>
+        <div id="errorMessageLeft">
+          <span id="errorMessage"></span>
+          <button id="errorShowMore">
+            More Information
                   </button>
-                  <button id="errorShowLess">
-                     Less Information
+          <button id="errorShowLess">
+            Less Information
                   </button>
-                </div>
-                <div id="errorMessageRight">
-                  <button id="errorClose">
-                     Close
+        </div>
+        <div id="errorMessageRight">
+          <button id="errorClose">
+            Close
                   </button>
-                </div>
-                <div className="clearBoth"></div>
-                <textarea id="errorMoreInfo" hidden={true} readOnly={true}></textarea>
-              </div>
-              {
-                showFooter&&<footer>
-                  <button className="toolbarButton pageUp" title="Previous Page" id="previous" onClick={this.pageDelete}></button>
-                  <button className="toolbarButton pageDown" title="Next Page" id="next" onClick={this.pageAdd}></button>
-                  <input type="number" id="pageNumber" className="toolbarField pageNumber" value={this.state.currentPageNumber} size={4} min={1} />
-                  <button className="toolbarButton zoomOut" title="Zoom Out" id="zoomOut" onClick={this.zoomOut}></button>
-                  <button className="toolbarButton zoomIn" title="Zoom In" id="zoomIn" onClick={this.zoomIn}></button>
-               </footer>
-              }
+        </div>
+        <div className="clearBoth"></div>
+        <textarea id="errorMoreInfo" hidden={true} readOnly={true}></textarea>
+      </div>
+      {
+        showFooter && <footer>
+          <button className="toolbarButton pageUp" title="Previous Page" id="previous" onClick={this.pageDelete}></button>
+          <button className="toolbarButton pageDown" title="Next Page" id="next" onClick={this.pageAdd}></button>
+          <input type="number" id="pageNumber" className="toolbarField pageNumber" value={this.state.currentPageNumber} size={4} min={1} />
+          <button className="toolbarButton zoomOut" title="Zoom Out" id="zoomOut" onClick={this.zoomOut}></button>
+          <button className="toolbarButton zoomIn" title="Zoom In" id="zoomIn" onClick={this.zoomIn}></button>
+        </footer>
+      }
 
-          </div>
+    </div>
   }
 }
