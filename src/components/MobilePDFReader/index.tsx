@@ -95,11 +95,11 @@ export class MobilePDFReader extends React.Component<IProps, IStates> {
       self.progress(progressData.loaded / progressData.total)
     }
 
-    return loadingTask.promise.then(function (pdfDocument) {
+    return loadingTask.promise.then((pdfDocument) => {
       // Document loaded, specifying document for the viewer.
       self.pdfDocument = pdfDocument;
       if (onDocumentComplete) {
-        this.props.onDocumentComplete(pdfDocument.numPages);
+        onDocumentComplete(pdfDocument.numPages);
       }
       self.pdfViewer.setDocument(pdfDocument)
       self.pdfLinkService.setDocument(pdfDocument)
