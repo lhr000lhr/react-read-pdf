@@ -85,7 +85,7 @@ export class MobilePDFReader extends React.Component<IProps, IStates> {
     // Loading document.
     let loadingTask = pdfjsLib.getDocument({
       url: url,
-      withCredentials: true,
+      withCredentials: false,
       maxImageSize: MAX_IMAGE_SIZE,
       cMapPacked: CMAP_PACKED
     })
