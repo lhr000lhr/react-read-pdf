@@ -103,7 +103,7 @@ export class MobilePDFReader extends React.Component<IProps, IStates> {
       }
       self.pdfViewer.setDocument(pdfDocument)
       self.pdfLinkService.setDocument(pdfDocument)
-      self.pdfHistory.initialize(pdfDocument.fingerprint)
+      // self.pdfHistory.initialize(pdfDocument.fingerprint)
       self.loadingBar.hide()
       self.setTitleUsingMetadata(pdfDocument)
     }, function (exception) {
@@ -205,10 +205,10 @@ export class MobilePDFReader extends React.Component<IProps, IStates> {
     this.pdfViewer = pdfViewer;
     linkService.setViewer(pdfViewer);
 
-    this.pdfHistory = new pdfjsViewer.PDFHistory({
-      linkService: linkService
-    });
-    linkService.setHistory(this.pdfHistory);
+    // this.pdfHistory = new pdfjsViewer.PDFHistory({
+    //   linkService: linkService
+    // });
+    // linkService.setHistory(this.pdfHistory);
     container.addEventListener("pagesinit", function () {
       // We can use pdfViewer now, e.g. let's change default scale.
       // deal with the init page in the props
